@@ -56,9 +56,8 @@ def sendTelegramNotif(listing, updates):
         max_value = int(cleaned_parts[1])
         average_value = (max_value - min_value) / 2  + min_value
         message = f"Car Deal Alert: \n {listing.get('title', ' ')} \n {listing.get('link', ' ')} \n {listing.get('location', ' ')}"
-        price = float(price)
-        min_value = float(min_value)
-        priceDiff = round((min_value - price), 0)
+        
+        priceDiff = min_value - price
         percentage = priceDiff / average_value
         if price < min_value:
             messPrefix = "Good Deal!"
@@ -71,7 +70,7 @@ def sendTelegramNotif(listing, updates):
         if price < min_value or price < average_value:
             url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
 
-    # print(requests.get(url).json())
+    print(requests.get(url).json())
 
 def update_listing(data, identifier_link, updates):
     """
@@ -184,7 +183,7 @@ def get_kbb_valuation_via_search(driver, opts, service, listing_title, mileage, 
             print("[DDG] ERROR: No organic kbb.com link found on the first page of results.")
             return None
         
-        # mileage = '0'
+        mileage = '0'
         if 'k' in mileage:
             mileage = re.sub(r'\D', '', str(mileage)) + "000"
         else:
@@ -357,7 +356,7 @@ def process_scraped_data(driver, opts, service):
             # opts = webdriver.ChromeOptions()
         print(f"\n--- Processing Listing {i+1}/{len(listings)}: {listing['title']} ---")
         parsed_info = parse_listing_title(listing['title'])
-        if listing['priceChecked'] or listing.get('priceCheckError', False):
+        if listing['priceChecked']:
             continue
 
 
@@ -402,7 +401,7 @@ def process_scraped_data(driver, opts, service):
             update_listing(listings, listing.get('link', ' ',), newData)
         else:
             print("KBB VALUATION FAILED for this vehicle.")
-            update_listing(listings, listing.get('link', ' ',), {'priceCheckError': True})
+
 # if __name__ == "__main__":
 #     process_scraped_data()
 

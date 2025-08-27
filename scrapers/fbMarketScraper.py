@@ -114,7 +114,7 @@ def fbMarketScraper(driver, scrapedLinks, link):
                     'mileage': mileage,
                     'link': link,
                     'source': 'Facebook',
-                    'priceChecked': True
+                    'priceChecked': False
                 })
 
         print(f"5. Found {len(results)} valid listings.")
