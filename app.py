@@ -3,10 +3,28 @@ import subprocess
 import logging
 
 app = Flask(__name__)
-logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
-handler = logging.FileHandler('test.log') # creates handler for the log file
-logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
+import logging
+import sys # Import the sys module to access standard output
 
+# --- Basic logger setup (as before) ---
+log_formatter = logging.Formatter('%(asctime)s - %(message)s')
+live_logger = logging.getLogger('live_logger')
+live_logger.setLevel(logging.INFO)
+
+# --- Handler 1: The File (for the web UI) ---
+file_handler = logging.FileHandler('live_scraper.log')
+file_handler.setFormatter(log_formatter)
+live_logger.addHandler(file_handler)
+
+# --- Handler 2: The Console (for journalctl debugging) ---
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(log_formatter)
+live_logger.addHandler(stream_handler)
+
+
+# --- Example Usage ---
+# Now, any message sent with this logger goes to BOTH the file and the console.
+live_logger.info("This message will appear in live_scraper.log AND in the systemd journal.")
 # The service name we will create in Phase 2
 SERVICE_NAME = "scraper.service"
 
@@ -31,7 +49,7 @@ def index():
 @app.route('/start', methods=['POST'])
 def start_scraper():
     print('huh?')
-    logger.info("Here's some info")
+    # logger.info("Here's some info")
 
     return jsonify(run_systemctl_command('start'))
 
@@ -42,13 +60,13 @@ def stop_scraper():
     return jsonify(run_systemctl_command('stop'))
 
 # This endpoint reads the last 15 lines of the log file
-@app.route('/logs')
-def get_logs():
-    if not os.path.exists('live_scraper.log'):
-        return jsonify([])
-    with open('live_scraper.log', 'r') as f:
-        lines = f.readlines()
-        return jsonify([line.strip() for line in lines[-15:]])
+# @app.route('/logs')
+# def get_logs():
+#     # if not os.path.exists('live_scraper.log'):
+#     #     return jsonify([])
+#     with open('live_scraper.log', 'r') as f:
+#         lines = f.readlines()
+#         return jsonify([line.strip() for line in lines[-15:]])
 
 @app.route('/status', methods=['GET'])
 def scraper_status():

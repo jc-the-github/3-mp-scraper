@@ -17,6 +17,28 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
+import logging
+import sys # Import the sys module to access standard output
+
+# --- Basic logger setup (as before) ---
+log_formatter = logging.Formatter('%(asctime)s - %(message)s')
+live_logger = logging.getLogger('live_logger')
+live_logger.setLevel(logging.INFO)
+
+# --- Handler 1: The File (for the web UI) ---
+file_handler = logging.FileHandler('live_scraper.log')
+file_handler.setFormatter(log_formatter)
+live_logger.addHandler(file_handler)
+
+# --- Handler 2: The Console (for journalctl debugging) ---
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(log_formatter)
+live_logger.addHandler(stream_handler)
+
+
+# --- Example Usage ---
+# Now, any message sent with this logger goes to BOTH the file and the console.
+live_logger.info("This message will appear in live_scraper.log AND in the systemd journal.")
 
 # This setup creates 'live_scraper.log' with timestamped messages
 log_handler = logging.FileHandler('live_scraper.log')
