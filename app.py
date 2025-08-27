@@ -1,7 +1,11 @@
 from flask import Flask, render_template, jsonify
 import subprocess
+import logging
 
 app = Flask(__name__)
+logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+handler = logging.FileHandler('test.log') # creates handler for the log file
+logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
 # The service name we will create in Phase 2
 SERVICE_NAME = "scraper.service"
@@ -27,6 +31,8 @@ def index():
 @app.route('/start', methods=['POST'])
 def start_scraper():
     print('huh?')
+    logger.info("Here's some info")
+
     return jsonify(run_systemctl_command('start'))
 
 @app.route('/stop', methods=['POST'])
