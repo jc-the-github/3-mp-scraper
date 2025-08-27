@@ -8,3 +8,5 @@ selenium==4.35.0
 thefuzz==0.22.1
 uszipcode==1.0.1
 webdriver_manager==4.0.2
+sqlmate = 2.0
+sqlalch_
