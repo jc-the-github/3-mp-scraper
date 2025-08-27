@@ -32,7 +32,17 @@ def start_scraper():
 @app.route('/stop', methods=['POST'])
 def stop_scraper():
     print('stoi?')
+    
     return jsonify(run_systemctl_command('stop'))
+
+# This endpoint reads the last 15 lines of the log file
+@app.route('/logs')
+def get_logs():
+    if not os.path.exists('live_scraper.log'):
+        return jsonify([])
+    with open('live_scraper.log', 'r') as f:
+        lines = f.readlines()
+        return jsonify([line.strip() for line in lines[-15:]])
 
 @app.route('/status', methods=['GET'])
 def scraper_status():

@@ -16,6 +16,18 @@ from selenium.common import NoSuchElementException, ElementNotInteractableExcept
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import logging
+
+# This setup creates 'live_scraper.log' with timestamped messages
+log_handler = logging.FileHandler('live_scraper.log')
+log_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+live_logger = logging.getLogger('live_logger')
+live_logger.setLevel(logging.INFO)
+live_logger.addHandler(log_handler)
+
+# Use this instead of print() in your scraper logic
+live_logger.info("This is a message from the server-side scraper.")
+
 
 service = Service()
 opts = webdriver.ChromeOptions()
