@@ -26,10 +26,12 @@ def index():
 
 @app.route('/start', methods=['POST'])
 def start_scraper():
+    print('huh?')
     return jsonify(run_systemctl_command('start'))
 
 @app.route('/stop', methods=['POST'])
 def stop_scraper():
+    print('stoi?')
     return jsonify(run_systemctl_command('stop'))
 
 @app.route('/status', methods=['GET'])
