@@ -49,20 +49,20 @@
 
         async function fetchAndLogServerMessages() {
             try {
-                const response = await fetch('/logs');
-                const logLines = await response.json();
-
+                // const response = await fetch('/logs');
+                // const logLines = await response.json();
+                console.log('yo')
                 // Check if there are new lines to prevent spamming the console
-                if (logLines.length > 0) {
-                    // Optional: Clears the console each time for a clean, updated view
-                    console.clear();
-
-                    console.log("--- Latest Server Logs ---");
-                    // Loop through the lines received from the server and log each one
-                    logLines.forEach(line => {
-                        console.log(line);
-                    });
-                    console.log("--------------------------");
+                // if (logLines.length > 0) {
+                //     // Optional: Clears the console each time for a clean, updated view
+                //     console.clear();
+                //     console.log('d')
+                //     console.log("--- Latest Server Logs ---");
+                //     // Loop through the lines received from the server and log each one
+                //     logLines.forEach(line => {
+                //         console.log(line);
+                //     });
+                //     console.log("--------------------------");
                 }
             } catch (error) {
                 console.error("Failed to fetch server logs:", error);
