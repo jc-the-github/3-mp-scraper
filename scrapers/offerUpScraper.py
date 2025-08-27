@@ -154,14 +154,14 @@ def offerUpScraper(driver, scrapedLinks):
                     'location': location,
                     'link': link,
                     'source': 'OfferUp',
-                    'priceChecked': False
+                    'priceChecked': True
                 })
                 
             print(f" Found {len(results)} results from OfferUp.")
             # driver.quit()
             return results
     except Exception as e:
-        print("e: " + str(e))
+        print("Error OfferUp: " + str(e))
         traceback.print_exc()
     # finally:
     #     driver.quit() # Always close the browser`

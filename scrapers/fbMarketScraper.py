@@ -118,11 +118,15 @@ def fbMarketScraper(driver, scrapedLinks, link):
                 })
 
         print(f"5. Found {len(results)} valid listings.")
-        return results
+        # driver.quit()
 
-    finally:
-        print("6. Closing WebDriver.")
-        driver.quit()
+        return results
+    except Exception as e:
+        print(f"Error FBMarket: {e}")
+        traceback.print_exc()
+    # finally:
+    #     print("6. Closing WebDriver.")
+    #     driver.quit()
 
 # if __name__ == "__main__":
 #     # You can change these values to whatever you need

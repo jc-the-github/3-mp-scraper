@@ -55,7 +55,7 @@ def save_new_listings(new_listings):
     This function performs two atomic append operations.
     """
     if not new_listings:
-        print("[Craigslist] No new listings to save.")
+        print("No new listings to save.")
         return
 
     # Open both files in append mode to add new data
@@ -67,7 +67,7 @@ def save_new_listings(new_listings):
             # Write just the unique URL to the index
             urls_f.write(listing['link'] + '\n')
             
-    print(f"[Craigslist] Appended {len(new_listings)} new listings to database.")
+    print(f"Appended {len(new_listings)} new listings to database.")
 
 
 
@@ -88,19 +88,22 @@ if __name__ == "__main__":
     # craigslist cars/trucks
     # listings = scrape_craigslist_v2(city="elpaso", query="car")
     # save_new_listings(listings)
-    # 
-    # listings = scrape_craigslist_v2("https://westky.craigslist.org/search/cadiz-ky/cta?lat=36.8168&lon=-87.8614&postal=78741&search_distance=1000#search=2~gallery~0")
-    # save_new_listings(listings)
-    # 
-    # listings = scrape_craigslist_v2("https://saguenay.craigslist.org/search/baie-comeau-northeast-qc/cta?lat=51.3981&lon=-69.4177&postal=78741&search_distance=1000&lang=en&cc=us#search=2~gallery~0")
-    # save_new_listings(listings)
+    link = "https://westky.craigslist.org/search/cadiz-ky/cta?lat=36.8168&lon=-87.8614&postal=78741&search_distance=1000#search=2~gallery~0"
+    listings = scrape_craigslist_v2(driver, scrapedLinks, link)
+    save_new_listings(listings)
+
+    link = "https://saguenay.craigslist.org/search/baie-comeau-northeast-qc/cta?lat=51.3981&lon=-69.4177&postal=78741&search_distance=1000&lang=en&cc=us#search=2~gallery~0"
+    listings = scrape_craigslist_v2(driver, scrapedLinks, link)
+    save_new_listings(listings)
 
     # fb market cars/trucks
-    # listings = fbMarketScraper("https://www.facebook.com/marketplace/la/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804")
-    # save_new_listings(listings)
-    # 
-    # listings = fbMarketScraper("https://www.facebook.com/marketplace/nyc/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804")
-    # save_new_listings(listings)
+    link = "https://www.facebook.com/marketplace/la/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
+    listings = fbMarketScraper(driver, scrapedLinks, link)
+    save_new_listings(listings)
+    
+    link = "https://www.facebook.com/marketplace/nyc/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
+    listings = fbMarketScraper(driver, scrapedLinks, link)
+    save_new_listings(listings)
 
     # offer up cars/trucks
     

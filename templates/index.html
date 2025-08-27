@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scraper Control Panel</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        button { font-size: 1.2em; padding: 10px 20px; margin: 10px; }
+        #status { font-size: 1.5em; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Scraper Control Panel</h1>
+    <p>Status: <span id="status">Checking...</span></p>
+    <button onclick="startScraper()">Start Scraper</button>
+    <button onclick="stopScraper()">Stop Scraper</button>
+
+    <script>
+        async function updateStatus() {
+            const response = await fetch('/status');
+            const data = await response.json();
+            document.getElementById('status').innerText = data.status.toUpperCase();
+        }
+
+        async function startScraper() {
+            await fetch('/start', { method: 'POST' });
+            updateStatus();
+        }
+
+        async function stopScraper() {
+            await fetch('/stop', { method: 'POST' });
+            updateStatus();
+        }
+
+        // Update status on page load and every 5 seconds
+        setInterval(updateStatus, 5000);
+        updateStatus();
+    </script>
+</body>
+</html>
