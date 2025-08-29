@@ -140,7 +140,7 @@ def offerUpScraper(driver, scrapedLinks):
             driver.quit()
             return []
             
-        print(f"Found {len(listings)} listings to process.")
+        print(f"OFFUP Found {len(listings)} listings to process.")
         
         # --- Loop through each listing to extract data ---
         for listing in listings:

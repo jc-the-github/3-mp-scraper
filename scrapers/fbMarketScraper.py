@@ -75,8 +75,10 @@ def fbMarketScraper(driver, scrapedLinks, link):
 
         # The Anchor Selector: Find all 'a' tags where the href starts with '/marketplace/item/'
         # This is the most reliable way to identify listing cards.
-        listing_cards = soup.select('a[href^="/marketplace/item/"]')
-        
+        # listing_cards = soup.select('a[href^="/marketplace/item/"]')
+        listing_cards = WebDriverWait(driver, 1000).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a[href^="/marketplace/item/"]'))
+        )
         for card in listing_cards:
             link = "https://www.facebook.com" + card.get('href', '')
             if link in scrapedLinks:
@@ -117,7 +119,7 @@ def fbMarketScraper(driver, scrapedLinks, link):
                     'priceChecked': False
                 })
 
-        print(f"5. Found {len(results)} valid listings.")
+        print(f"FBM Found {len(results)} valid listings.")
         # driver.quit()
 
         return results

@@ -19,6 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 import logging
 import sys # Import the sys module to access standard output
+from boat_valuator import process_scraped_data_boat
 
 # --- Basic logger setup (as before) ---
 log_formatter = logging.Formatter('%(asctime)s - %(message)s')
@@ -72,6 +73,8 @@ driver = webdriver.Chrome(service=service, options=opts)
 
 # --- Constants for shared database and index files ---
 DATABASE_FILE = "scraped_listings.jsonl"
+BOATS_DATABASE_FILE = "boats_scraped_listings.jsonl"
+
 SEEN_URLS_FILE = "seen_urls.txt"
 
 
@@ -104,9 +107,32 @@ def save_new_listings(new_listings):
                 new_listings_num = new_listings_num + 1
 
             
-    print(f"Appended {str(new_listings_num)} new listings to database.")
+    print(f"Appended {str(new_listings_num)} new listings to cars/trucks database.")
     # print(f"Appended {len(new_listings)} new listings to database.")
 
+def save_new_listings_boat(new_listings):
+    """
+    Appends truly new listings to the database and their URLs to the index.
+    This function performs two atomic append operations.
+    """
+    if not new_listings:
+        print("No new listings to save.")
+        return
+    new_listings_num = 0
+    # Open both files in append mode to add new data
+    with open(BOATS_DATABASE_FILE, 'a', encoding='utf-8') as db_f, \
+         open(SEEN_URLS_FILE, 'a', encoding='utf-8') as urls_f:
+        for listing in new_listings:
+            if listing.get('link', '') not in scrapedLinks:
+                # Write the full JSON object to the database
+                db_f.write(json.dumps(listing, ensure_ascii=False) + '\n')
+                # Write just the unique URL to the index
+                urls_f.write(listing['link'] + '\n')
+                new_listings_num = new_listings_num + 1
+
+            
+    print(f"Appended {str(new_listings_num)} new listings to boats database.")
+    # print(f"Appended {len(new_listings)} new listings to database.")
 
 
     
@@ -129,26 +155,32 @@ if __name__ == "__main__":
 
 
     
-    link = "https://westky.craigslist.org/search/cadiz-ky/cta?lat=36.8168&lon=-87.8614&postal=78741&search_distance=1000#search=2~gallery~0"
-    listings = scrape_craigslist_v2(driver, scrapedLinks, link)
-    save_new_listings(listings)
+    # link = "https://westky.craigslist.org/search/cadiz-ky/cta?lat=36.8168&lon=-87.8614&postal=78741&search_distance=1000#search=2~gallery~0"
+    # listings = scrape_craigslist_v2(driver, scrapedLinks, link)
+    # save_new_listings(listings)
+    
+    # boats
+    # link = "https://westky.craigslist.org/search/cadiz-ky/boo?lat=36.8168&lon=-87.8614&search_distance=1000#search=2~gallery~0"
+    # listings = scrape_craigslist_v2(driver, scrapedLinks, link)
+    # save_new_listings_boat(listings)
 
-    link = "https://saguenay.craigslist.org/search/baie-comeau-northeast-qc/cta?lat=51.3981&lon=-69.4177&postal=78741&search_distance=1000&lang=en&cc=us#search=2~gallery~0"
-    listings = scrape_craigslist_v2(driver, scrapedLinks, link)
-    save_new_listings(listings)
+    # link = "https://saguenay.craigslist.org/search/baie-comeau-northeast-qc/cta?lat=51.3981&lon=-69.4177&postal=78741&search_distance=1000&lang=en&cc=us#search=2~gallery~0"
+    # listings = scrape_craigslist_v2(driver, scrapedLinks, link)
+    # save_new_listings(listings)
 
     # fb market cars/trucks
-    link = "https://www.facebook.com/marketplace/la/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
-    listings = fbMarketScraper(driver, scrapedLinks, link)
-    save_new_listings(listings)
+    # link = "https://www.facebook.com/marketplace/la/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
+    # listings = fbMarketScraper(driver, scrapedLinks, link)
+    # save_new_listings(listings)
     
-    link = "https://www.facebook.com/marketplace/nyc/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
-    listings = fbMarketScraper(driver, scrapedLinks, link)
-    save_new_listings(listings)
+    # link = "https://www.facebook.com/marketplace/nyc/vehicles/?sortBy=creation_time_descend&exact=true&radius_in_km=804"
+    # listings = fbMarketScraper(driver, scrapedLinks, link)
+    # save_new_listings(listings)
 
-    # offer up cars/trucks
-    listings = offerUpScraper(driver, scrapedLinks)
-    save_new_listings(listings)
+    # # offer up cars/trucks
+    # listings = offerUpScraper(driver, scrapedLinks)
+    # save_new_listings(listings)
 
-    process_scraped_data(driver, opts, service)
+    process_scraped_data_boat(driver)
+    # process_scraped_data(driver, opts, service)
 
