@@ -38,6 +38,12 @@ def waitFuncSpecified(waitAmount):
 
 def save_data(data):
     """Writes a list of dictionaries to a .jsonl file, overwriting it."""
+    if os.path.exists("scraped_listings.jsonl"):
+        os.remove("scraped_listings.jsonl")
+        print(f"File '{"scraped_listings.jsonl"}' deleted successfully.")
+    else:
+        print(f"File '{"scraped_listings.jsonl"}' not found.")
+
     with open("scraped_listings.jsonl", 'w') as f:
         for item in data:
             f.write(json.dumps(item) + '\n')
@@ -335,74 +341,80 @@ def parse_listing_title(title):
         return {'year': year, 'full_title': remaining_title}
     return None
 
-def process_scraped_data(driver, opts, service):
+def process_scraped_data(driver, opts, service, listing, listings):
     print("--- Starting Unified Valuation Processor ---")
     # official_makes = get_all_makes()
     # if not official_makes: return
-    try:
-        listings = []
-        with open(DATABASE_FILE, 'r', encoding='utf-8') as f:
-            for line in f: listings.append(json.loads(line))
-        print(f"Loaded {len(listings)} listings from '{DATABASE_FILE}'.")
-    except FileNotFoundError:
-        print(f"ERROR: Database file '{DATABASE_FILE}' not found. Run a scraper first.")
-        return
+    # try:
+    #     listings = []
+    #     with open(DATABASE_FILE, 'r', encoding='utf-8') as f:
+    #         for line in f: listings.append(json.loads(line))
+    #     print(f"Loaded {len(listings)} listings from '{DATABASE_FILE}'.")
+    # except FileNotFoundError:
+    #     print(f"ERROR: Database file '{DATABASE_FILE}' not found. Run a scraper first.")
+    #     return
 
-    for i, listing in enumerate(listings):
+    # for i, listing in enumerate(listings):
         
         # print("driver: " + str(driver) )
         # if driver is None:
         #     print("driver is none")
             # service = Service()
             # opts = webdriver.ChromeOptions()
-        print(f"\n--- Processing Listing {i+1}/{len(listings)}: {listing['title']} ---")
-        parsed_info = parse_listing_title(listing['title'])
-        if listing['priceChecked'] or listing.get('priceCheckError', False):
-            continue
+    print(f"\n--- Processing Listing: {listing['title']} ---")
+    # print(f"\n--- Processing Listing {i+1}/{len(listings)}: {listing['title']} ---")
+
+    parsed_info = parse_listing_title(listing['title'])
+    if listing['priceChecked'] or listing.get('priceCheckError', False):
+        pass
+        # continue
 
 
-        if not parsed_info: continue
-        if listing['title'] == 'N/A':
-            continue
-        if i > 0:
-            driver = webdriver.Chrome(service=service, options=opts)
-        # best_make_match = process.extractOne(parsed_info['full_title'], official_makes)
-        # if not best_make_match or best_make_match[1] < MATCH_SCORE_THRESHOLD: continue
-        # validated_make = best_make_match[0]
+    if not parsed_info: 
+        pass
+        # continue
+    if listing['title'] == 'N/A':
+        pass
+        # continue
+    # if i > 0:
+    #     driver = webdriver.Chrome(service=service, options=opts)
+    # best_make_match = process.extractOne(parsed_info['full_title'], official_makes)
+    # if not best_make_match or best_make_match[1] < MATCH_SCORE_THRESHOLD: continue
+    # validated_make = best_make_match[0]
+    
+    # model_guess = parsed_info['full_title'].replace(validated_make, "", 1).strip()
+    # official_models = get_models_for_make(validated_make)
+    # if not official_models: continue
+    
+    # best_model_match = process.extractOne(model_guess, official_models)
+    # if not best_model_match or best_model_match[1] < MATCH_SCORE_THRESHOLD: continue
         
-        # model_guess = parsed_info['full_title'].replace(validated_make, "", 1).strip()
-        # official_models = get_models_for_make(validated_make)
-        # if not official_models: continue
-        
-        # best_model_match = process.extractOne(model_guess, official_models)
-        # if not best_model_match or best_model_match[1] < MATCH_SCORE_THRESHOLD: continue
-            
-        # print(f"[NHTSA] Vehicle validated.")
-        
-        # City/State parsing from listing['location']
-        location_parts = listing.get('location', '').split(',')
-        city = location_parts[0].strip() if len(location_parts) > 0 else "El Paso"
-        state = location_parts[1].strip() if len(location_parts) > 1 else "TX"
+    # print(f"[NHTSA] Vehicle validated.")
+    
+    # City/State parsing from listing['location']
+    location_parts = listing.get('location', '').split(',')
+    city = location_parts[0].strip() if len(location_parts) > 0 else "El Paso"
+    state = location_parts[1].strip() if len(location_parts) > 1 else "TX"
 
-        newData = get_kbb_valuation_via_search(driver= driver,
-            opts= opts,
-            service= service,
-            listing_title=listing['title'],
-            mileage=listing.get('mileage', '0'),
-            city=city,
-            state=state
-        )
-        # updatedData = {'title'=listing['title'],
-        #     mileage=listing.get('mileage', '0'),
-        #     city=city,
-        #     state=state}
-        
-        if newData:
-            print(f"KBB VALUATION FOUND: {newData}")
-            update_listing(listings, listing.get('link', ' ',), newData)
-        else:
-            print("KBB VALUATION FAILED for this vehicle.")
-            update_listing(listings, listing.get('link', ' ',), {'priceCheckError': True})
+    newData = get_kbb_valuation_via_search(driver= driver,
+        opts= opts,
+        service= service,
+        listing_title=listing['title'],
+        mileage=listing.get('mileage', '0'),
+        city=city,
+        state=state
+    )
+    # updatedData = {'title'=listing['title'],
+    #     mileage=listing.get('mileage', '0'),
+    #     city=city,
+    #     state=state}
+    
+    if newData:
+        print(f"KBB VALUATION FOUND: {newData}")
+        update_listing(listings, listing.get('link', ' ',), newData)
+    else:
+        print("KBB VALUATION FAILED for this vehicle.")
+        update_listing(listings, listing.get('link', ' ',), {'priceCheckError': True})
 # if __name__ == "__main__":
 #     process_scraped_data()
 

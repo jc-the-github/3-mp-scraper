@@ -29,7 +29,7 @@ def waitFuncSpecified(waitAmount):
         print("cont")
 
 # def scrape_craigslist_v2(scrapedLinks, city, query):
-def scrape_craigslist_v2(driver, scrapedLinks, url):
+def scrape_craigslist_v2(driver, scrapedLinks, url, category):
 
     """
     Scrapes Craigslist using the superior JSON-LD data method.
@@ -68,6 +68,7 @@ def scrape_craigslist_v2(driver, scrapedLinks, url):
 
         # --- Loop through each listing to extract data ---
         for listing in listings:
+            print("list: " + str(listing.get('title')))
             try:
                 # --- Extract Title and Link ---
                 title_element = listing.find_element(By.CSS_SELECTOR, 'a.posting-title')
@@ -116,17 +117,45 @@ def scrape_craigslist_v2(driver, scrapedLinks, url):
                 except NoSuchElementException:
                     mileage = 'N/A'
                     location = 'N/A'
-                
-                # --- Compile the data for this listing ---
+
                 listing_data = {
                     'title': title,
                     'price': price,
                     'mileage': mileage,
                     'location': location,
                     'link': link,
-                    'priceChecked': False 
+                    'source': "Craigslist",
+                    'priceChecked': False,
+                    
                 }
-                scraped_data.append(listing_data)
+                # --- Compile the data for this listing ---
+                if category == 'car':
+                    listing_data = {
+                    'title': title,
+                    'price': price,
+                    'mileage': mileage,
+                    'location': location,
+                    'link': link,
+                    'source': "Craigslist",
+                    'priceChecked': False,
+                    'category': category
+                    
+                }
+                else:
+                    listing_data = {
+                    'title': title,
+                    'price': price,
+                    'mileage': mileage,
+                    'location': location,
+                    'link': link,
+                    'source': "Craigslist",
+                    'priceChecked': False,
+                    'category': category
+                }
+                print("list: " + str(listing.get('title')))
+
+                # scraped_data.append(listing_data)
+                scraped_data.insert(0,listing_data)
 
             except Exception as e:
                 print(f"Could not process a listing. Error: {e}")

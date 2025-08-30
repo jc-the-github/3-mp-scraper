@@ -25,6 +25,13 @@ MATCH_SCORE_THRESHOLD = 80 # Confidence threshold for fuzzy matching search resu
 
 def save_data(data):
     """Writes a list of dictionaries to a .jsonl file, overwriting it."""
+    if os.path.exists("boats_scraped_listings.jsonl"):
+        os.remove("boats_scraped_listings.jsonl")
+        print(f"File '{"boats_scraped_listings.jsonl"}' deleted successfully.")
+    else:
+        print(f"File '{"boats_scraped_listings.jsonl"}' not found.")
+
+
     with open(DATABASE_FILE, 'w') as f:
         for item in data:
             f.write(json.dumps(item) + '\n')
@@ -180,17 +187,17 @@ def get_jdpower_valuation(driver, listing_title):
         return None
 
 
-def process_scraped_data_boat(driver):
-    """Main loop to process listings from the database file."""
-    print("--- Starting JD Power Valuation Processor ---")
+def process_scraped_data_boat(driver, listing, listings):
+    # """Main loop to process listings from the database file."""
+    # print("--- Starting JD Power Valuation Processor ---")
     
-    try:
-        with open(DATABASE_FILE, 'r', encoding='utf-8') as f:
-            listings = [json.loads(line) for line in f]
-        print(f"Loaded {len(listings)} listings from '{DATABASE_FILE}'.")
-    except FileNotFoundError:
-        print(f"ERROR: Database file '{DATABASE_FILE}' not found. Run a scraper first.")
-        return
+    # try:
+    #     with open(DATABASE_FILE, 'r', encoding='utf-8') as f:
+    #         listings = [json.loads(line) for line in f]
+    #     print(f"Loaded {len(listings)} listings from '{DATABASE_FILE}'.")
+    # except FileNotFoundError:
+    #     print(f"ERROR: Database file '{DATABASE_FILE}' not found. Run a scraper first.")
+    #     return
         
     # service = Service(ChromeDriverManager().install())
     # opts = webdriver.ChromeOptions()
@@ -199,35 +206,37 @@ def process_scraped_data_boat(driver):
     # opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36")
     # opts.add_argument("--disable-blink-features=AutomationControlled") # Helps avoid bot detection
 
-    for i, listing in enumerate(listings):
-        print(f"\n--- Processing Listing {i+1}/{len(listings)}: {listing.get('title', 'N/A')} ---")
+    # for i, listing in enumerate(listings):
+    # print(f"\n--- Processing Listing {i+1}/{len(listings)}: {listing.get('title', 'N/A')} ---")
+    print(f"\n--- Processing Listing: {listing.get('title', 'N/A')} ---")
 
-        if listing.get('priceChecked'):
-            print("This listing has already been processed. Skipping.")
-            continue
+    if listing.get('priceChecked'):
+        print("This listing has already been processed. Skipping.")
+        # continue
+    
+    if listing.get('title', 'N/A') == 'N/A':
+        print("Listing has no title. Skipping.")
+        # continue
+
+    # driver = None # Ensure driver is defined in this scope
+    try:
+        # driver = webdriver.Chrome(service=service, options=opts)
+        valuation_data = get_jdpower_valuation(
+            driver=driver,
+            listing_title=listing['title']
+        )
         
-        if listing.get('title', 'N/A') == 'N/A':
-            print("Listing has no title. Skipping.")
-            continue
+        if valuation_data:
+            print(f"JD POWER VALUATION FOUND: {valuation_data}")
+            # return valuation_data
+            listings, found = update_listing_data(listings, listing.get('link'), valuation_data)
+        else:
+            print("JD POWER VALUATION FAILED for this vehicle.")
+            # Mark as checked to avoid retrying a known failure
+            listings, found = update_listing_data(listings, listing.get('link'), {"priceChecked": True})
 
-        # driver = None # Ensure driver is defined in this scope
-        try:
-            # driver = webdriver.Chrome(service=service, options=opts)
-            valuation_data = get_jdpower_valuation(
-                driver=driver,
-                listing_title=listing['title']
-            )
-            
-            if valuation_data:
-                print(f"JD POWER VALUATION FOUND: {valuation_data}")
-                listings, found = update_listing_data(listings, listing.get('link'), valuation_data)
-            else:
-                print("JD POWER VALUATION FAILED for this vehicle.")
-                # Mark as checked to avoid retrying a known failure
-                listings, found = update_listing_data(listings, listing.get('link'), {"priceChecked": True})
-
-        except Exception as e:
-            print(f"An error occurred in the main processing loop for a listing: {e}")
+    except Exception as e:
+        print(f"An error occurred in the main processing loop for a listing: {e}")
         # finally:
         #     if driver:
         #         driver.quit()

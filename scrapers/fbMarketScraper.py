@@ -39,7 +39,7 @@ def sanitize_for_console(text):
     """
     return text.encode('cp1252', 'ignore').decode('cp1252')
 
-def fbMarketScraper(driver, scrapedLinks, link):
+def fbMarketScraper(driver, scrapedLinks, link, category):
     
     # Vars
     # service = Service()
@@ -72,6 +72,7 @@ def fbMarketScraper(driver, scrapedLinks, link):
         print("4. Parsing HTML for listings...")
         page_source = driver.page_source
         soup = BeautifulSoup(page_source, 'html.parser')
+        # print("FB: " + str(soup))
 
         # The Anchor Selector: Find all 'a' tags where the href starts with '/marketplace/item/'
         # This is the most reliable way to identify listing cards.
@@ -79,47 +80,115 @@ def fbMarketScraper(driver, scrapedLinks, link):
         listing_cards = WebDriverWait(driver, 1000).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a[href^="/marketplace/item/"]'))
         )
+        # print("FB: " + str(listing_cards))
+
         for card in listing_cards:
-            link = "https://www.facebook.com" + card.get('href', '')
+            relative_link = card.get_attribute('href')
+            link = f"https://facebook.com{relative_link}" if relative_link.startswith('/') else relative_link
             if link in scrapedLinks:
                 continue
             # Initialize data points
             title, location, price, mileage = "N/A", "N/A", "N/A", "N/A"
-
-            # Primary Data Extraction from img 'alt' attribute
-            img_tag = card.find('img')
-            if img_tag and img_tag.get('alt'):
-                alt_text = sanitize_for_console(img_tag['alt'])
-                if ' in ' in alt_text:
-                    parts = alt_text.split(' in ', 1)
+            # --- NEW: Extract Title & Location from Image Alt Text using Selenium ---
+            # We'll find the 'img' tag *within* the context of the current 'card' element.
+            img_tag = card.find_element(By.TAG_NAME, 'img')
+            alt_text = img_tag.get_attribute('alt')
+            
+            if alt_text:
+                sanitized_alt = sanitize_for_console(alt_text)
+                if ' in ' in sanitized_alt:
+                    parts = sanitized_alt.split(' in ', 1)
                     title = parts[0]
                     location = parts[1]
                 else:
-                    title = alt_text
+                    title = sanitized_alt
 
-            # Secondary Data Extraction from all spans within the card
-            span_texts = [span.get_text(strip=True) for span in card.find_all('span') if span.get_text(strip=True)]
-            
+            # --- NEW: Extract Price & Mileage from Spans using Selenium ---
+            # Find all 'span' tags *within* the current 'card' element.
+            spans = card.find_elements(By.TAG_NAME, 'span')
+            # Extract the text from each span, filtering out any empty ones
+            span_texts = [span.text for span in spans if span.text]
+
             for text in span_texts:
                 if text.startswith('$'):
                     price = text
-                # Regex to find mileage, e.g., "169K miles" or "10,000 miles"
+                # Using the same reliable regex to find mileage
                 elif re.search(r'\d[\d,.]*K?\s*miles', text, re.IGNORECASE):
                     mileage = text
+            
+            # --- Data Validation: Only add if we have the essentials ---
+            # A listing without a title or price isn't very useful.
+            if title != "N/A" and price != "N/A" and link != "N/A":
+                # results.insert(0,{
+                #     'title': title,
+                #     'price': price,
+                #     'location': location,
+                #     'mileage': mileage,
+                #     'link': link,
+                #     'source': 'Facebook',
+                #     'priceChecked': False
+                # })
 
-            # Add to results only if essential data is found
-            if title != "N/A" and price != "N/A":
-                results.append({
+                # --- Compile the data for this listing ---
+                if category == 'car':
+                    results.insert(0,{
                     'title': title,
                     'price': price,
-                    'location': location,
                     'mileage': mileage,
+                    'location': location,
                     'link': link,
-                    'source': 'Facebook',
-                    'priceChecked': False
+                    'source': "Facebook",
+                    'priceChecked': False,
+                    'category': category  
                 })
+                else:
+                    results.insert(0,{
+                    'title': title,
+                    'price': price,
+                    'mileage': mileage,
+                    'location': location,
+                    'link': link,
+                    'source': "Facebook",
+                    'priceChecked': False,
+                    'category': category
+                })
+                print("list: " + str(title))
+
+            # # Primary Data Extraction from img 'alt' attribute
+            # img_tag = card.find('img')
+            # if img_tag and img_tag.get('alt'):
+            #     alt_text = sanitize_for_console(img_tag['alt'])
+            #     if ' in ' in alt_text:
+            #         parts = alt_text.split(' in ', 1)
+            #         title = parts[0]
+            #         location = parts[1]
+            #     else:
+            #         title = alt_text
+
+            # # Secondary Data Extraction from all spans within the card
+            # span_texts = [span.get_text(strip=True) for span in card.find_all('span') if span.get_text(strip=True)]
+            
+            # for text in span_texts:
+            #     if text.startswith('$'):
+            #         price = text
+            #     # Regex to find mileage, e.g., "169K miles" or "10,000 miles"
+            #     elif re.search(r'\d[\d,.]*K?\s*miles', text, re.IGNORECASE):
+            #         mileage = text
+
+            # # Add to results only if essential data is found
+            # if title != "N/A" and price != "N/A":
+            #     results.append({
+            #         'title': title,
+            #         'price': price,
+            #         'location': location,
+            #         'mileage': mileage,
+            #         'link': link,
+            #         'source': 'Facebook',
+            #         'priceChecked': False
+            #     })
 
         print(f"FBM Found {len(results)} valid listings.")
+
         # driver.quit()
 
         return results

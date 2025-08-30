@@ -93,7 +93,7 @@ def waitFuncSpecified(waitAmount):
     # pawnListingsHTMLFile.close()
 
 
-def offerUpScraper(driver, scrapedLinks):
+def offerUpScraper(driver, scrapedLinks, category):
     
     # # Vars
     # service = Service()
@@ -201,9 +201,35 @@ def offerUpScraper(driver, scrapedLinks):
                         'mileage': mileage,
                         'location': location,
                         'link': link,
+                        'source': 'OfferUp',
                         'priceChecked': False
                     }
-                    scraped_data.append(listing_data)
+                    if category == 'car':
+                        listing_data = {
+                        'title': title,
+                        'price': price,
+                        'mileage': mileage,
+                        'location': location,
+                        'link': link,
+                        'source': "OfferUp",
+                        'priceChecked': False,
+                        'category': category
+                        
+                    }
+                    else:
+                        listing_data = {
+                        'title': title,
+                        'price': price,
+                        'mileage': mileage,
+                        'location': location,
+                        'link': link,
+                        'source': "OfferUp",
+                        'priceChecked': False,
+                        'category': category
+                    }
+                    print("list: " + str(listing.get('title')))
+
+                    scraped_data.insert(0,listing_data)
 
             except Exception as e:
                 print("Error OfferUp: " + str(e))
